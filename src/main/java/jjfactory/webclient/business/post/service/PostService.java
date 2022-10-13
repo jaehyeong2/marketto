@@ -12,6 +12,7 @@ import jjfactory.webclient.business.post.repository.PostRepository;
 import jjfactory.webclient.global.dto.res.PagingRes;
 import jjfactory.webclient.global.ex.BusinessException;
 import jjfactory.webclient.global.ex.ErrorCode;
+import jjfactory.webclient.global.slack.SlackService;
 import jjfactory.webclient.global.util.image.S3Upload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -31,11 +32,13 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final PostQueryRepository postQueryRepository;
     private final S3Upload s3Upload;
+    private final SlackService slackService;
     @Transactional(readOnly = true)
     public PagingRes<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query){
         return new PagingRes<>(postQueryRepository.findAllPosts(pageable,startDate,endDate,query));
     }
     public Long savePost(PostCreate dto, List<MultipartFile> images, Member member){
+        slackService.postSlackMessage("savePost 메소드 호출");
         Category category = getCategory(dto.getCategoryId());
 
         Post post = Post.create(dto, member, category);
