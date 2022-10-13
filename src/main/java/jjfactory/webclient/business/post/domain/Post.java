@@ -4,6 +4,8 @@ package jjfactory.webclient.business.post.domain;
 import jjfactory.webclient.business.BaseEntity;
 import jjfactory.webclient.business.category.domain.Category;
 import jjfactory.webclient.business.member.domain.Member;
+import jjfactory.webclient.business.post.dto.req.PostCreate;
+import jjfactory.webclient.business.post.dto.req.PostUpdate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +15,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -32,6 +35,7 @@ public class Post extends BaseEntity {
 
     private BigDecimal price;
     private int viewCount;
+    private int likeCount;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "photo", joinColumns = @JoinColumn(name = "post_id"))
@@ -46,5 +50,39 @@ public class Post extends BaseEntity {
         this.price = price;
         this.viewCount = viewCount;
         this.images = images;
+    }
+
+    public static Post create(PostCreate dto,Member member,Category category){
+        return Post.builder()
+                .content(dto.getContent())
+                .title(dto.getTitle())
+                .member(member)
+                .category(category)
+                .viewCount(0)
+                .price(BigDecimal.valueOf(dto.getPrice()))
+                .build();
+    }
+
+    public void update(PostUpdate dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.price = BigDecimal.valueOf(dto.getPrice());
+    }
+
+    public void addImagePaths(List<String> imagePaths) {
+        this.images = imagePaths.stream().map(PostImage::new)
+                .collect(Collectors.toList());
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount += 1;
+    }
+
+    public void increaseViewCount() {
+        this.viewCount += 1;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount -= 1;
     }
 }

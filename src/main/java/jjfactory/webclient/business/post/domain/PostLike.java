@@ -1,20 +1,17 @@
-package jjfactory.webclient.business.like.domain;
+package jjfactory.webclient.business.post.domain;
 
 import jjfactory.webclient.business.BaseEntity;
 import jjfactory.webclient.business.member.domain.Member;
-import jjfactory.webclient.business.post.domain.Post;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.util.Lazy;
 
 import javax.persistence.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Table(name = "post_like")
 @Entity
-public class Like extends BaseEntity {
+public class PostLike extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

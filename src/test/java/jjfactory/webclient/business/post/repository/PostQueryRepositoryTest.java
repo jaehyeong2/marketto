@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jjfactory.webclient.business.member.domain.Member;
+import jjfactory.webclient.business.member.domain.QMember;
 import jjfactory.webclient.business.post.domain.Post;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.global.dto.req.MyPageReq;
@@ -13,7 +14,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
@@ -22,15 +25,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static jjfactory.webclient.business.member.domain.QMember.*;
 import static jjfactory.webclient.business.post.domain.QPost.post;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-
-@DataJpaTest
+@Transactional
+@SpringBootTest
 class PostQueryRepositoryTest {
     @Autowired
     EntityManager em;
+    @Autowired
     private JPAQueryFactory queryFactory;
 
     @BeforeEach
@@ -41,7 +46,7 @@ class PostQueryRepositoryTest {
                 .build();
         em.persist(wogud222);
 
-        for (int i = 1; i < 16; i++) {
+        for (int i = 1; i < 500; i++) {
             Post post = Post.builder().member(wogud222)
                     .content("하이" + i)
                     .title("제목" + (i+1))
@@ -76,7 +81,37 @@ class PostQueryRepositoryTest {
                         contains("12"))
                 .fetch().size();
         //then
-        assertThat(total).isEqualTo(2);
+        assertThat(total).isEqualTo(21);
+    }
+
+    @Test
+    @DisplayName("모든 게시물 조회 성공 + 날짜 검색 + 문자검색v2")
+    void findAllPostsV2() {
+        //given
+        String startDate = "2022-09-01 00:00:00";
+        String endDate = "2022-10-30 23:59:59";
+
+        PageRequest pageable = new MyPageReq(1, 10).of();
+
+        //when
+        List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post,member))
+                .from(post)
+                .innerJoin(post.member,member)
+                .where(between(startDate, endDate),
+                        contains("12"))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(post.createdAt.desc())
+                .fetch();
+
+        int total = queryFactory.select(Projections.constructor(PostRes.class, post,member))
+                .from(post)
+                .innerJoin(post.member,member)
+                .where(between(startDate, endDate),
+                        contains("12"))
+                .fetch().size();
+        //then
+        assertThat(total).isEqualTo(21);
     }
 
     private BooleanExpression contains(String query) {

@@ -1,18 +1,18 @@
 package jjfactory.webclient.business.post.dto.req;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Getter
-public class PostCreate {
-    private Long categoryId;
+public class PostUpdate {
     private String title;
     private String content;
     private int price;
 
-    public PostCreate(Long categoryId, String title, String content, int price) {
-        this.categoryId = categoryId;
+    @Builder
+    public PostUpdate(String title, String content, int price) {
         this.title = title;
         this.content = content;
         this.price = price;
