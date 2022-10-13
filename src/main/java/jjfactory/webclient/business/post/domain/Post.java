@@ -6,10 +6,7 @@ import jjfactory.webclient.business.category.domain.Category;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;

@@ -30,12 +30,10 @@ import static jjfactory.webclient.business.post.domain.QPost.post;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@Transactional
-@SpringBootTest
+@DataJpaTest
 class PostQueryRepositoryTest {
     @Autowired
     EntityManager em;
-    @Autowired
     private JPAQueryFactory queryFactory;
 
     @BeforeEach
@@ -46,14 +44,49 @@ class PostQueryRepositoryTest {
                 .build();
         em.persist(wogud222);
 
-        for (int i = 1; i < 500; i++) {
-            Post post = Post.builder().member(wogud222)
+        Member wogud333 = Member.builder().username("wogud333")
+                .build();
+        em.persist(wogud333);
+
+        for (int i = 1; i < 51; i++) {
+            Member memberTmp = wogud222;
+            if(i %2 == 0) memberTmp = wogud333;
+
+            Post post = Post.builder().member(memberTmp)
                     .content("하이" + i)
                     .title("제목" + (i+1))
                     .build();
 
             em.persist(post);
         }
+    }
+
+    @Test
+    @DisplayName("내 게시물 조회 성공 + 날짜 검색")
+    void findMyPosts() {
+        //given
+        String startDate = "2022-09-01 00:00:00";
+        String endDate = "2022-10-30 23:59:59";
+
+        PageRequest pageable = new MyPageReq(1, 10).of();
+
+        //when
+        List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .where(between(startDate, endDate),
+                        post.member.username.eq("wogud222"))
+                .orderBy(post.createdAt.desc())
+                .fetch();
+
+        int total = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .where(between(startDate, endDate),
+                        post.member.username.eq("wogud222"))
+                .fetch().size();
+        //then
+        assertThat(total).isEqualTo(25);
     }
 
     @Test
@@ -81,7 +114,7 @@ class PostQueryRepositoryTest {
                         contains("12"))
                 .fetch().size();
         //then
-        assertThat(total).isEqualTo(21);
+        assertThat(total).isEqualTo(2);
     }
 
     @Test

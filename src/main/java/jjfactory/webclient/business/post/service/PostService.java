@@ -4,15 +4,19 @@ import jjfactory.webclient.business.category.domain.Category;
 import jjfactory.webclient.business.category.repository.CategoryRepository;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.domain.Post;
+import jjfactory.webclient.business.post.domain.PostLike;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
 import jjfactory.webclient.business.post.dto.res.PostRes;
+import jjfactory.webclient.business.post.repository.PostLikeRepository;
 import jjfactory.webclient.business.post.repository.PostQueryRepository;
 import jjfactory.webclient.business.post.repository.PostRepository;
+import jjfactory.webclient.global.dto.req.FcmMessageDto;
 import jjfactory.webclient.global.dto.res.PagingRes;
 import jjfactory.webclient.global.ex.BusinessException;
 import jjfactory.webclient.global.ex.ErrorCode;
 import jjfactory.webclient.global.slack.SlackService;
+import jjfactory.webclient.global.util.FireBasePush;
 import jjfactory.webclient.global.util.image.S3Upload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -29,14 +33,23 @@ import java.util.stream.Collectors;
 public class PostService {
     public static final String POST_IMAGE_PATH = "postImages/";
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
     private final CategoryRepository categoryRepository;
     private final PostQueryRepository postQueryRepository;
     private final S3Upload s3Upload;
     private final SlackService slackService;
+    private final FireBasePush fireBasePush;
+
     @Transactional(readOnly = true)
     public PagingRes<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query){
         return new PagingRes<>(postQueryRepository.findAllPosts(pageable,startDate,endDate,query));
     }
+
+    @Transactional(readOnly = true)
+    public PagingRes<PostRes> findMyPosts(Pageable pageable,String startDate,String endDate,Member member){
+        return new PagingRes<>(postQueryRepository.findMyPosts(pageable,startDate,endDate,member));
+    }
+
     public Long savePost(PostCreate dto, List<MultipartFile> images, Member member){
         slackService.postSlackMessage("savePost 메소드 호출");
         Category category = getCategory(dto.getCategoryId());
@@ -47,20 +60,43 @@ public class PostService {
         return post.getId();
     }
 
+    public Long like(Member loginMember,Long postId){
+        Post post = getPost(postId);
+        PostLike postLike = PostLike.create(loginMember, post);
+
+        postLikeRepository.save(postLike);
+        fireBasePush.sendMessage(FcmMessageDto.builder()
+                        .fcmToken(post.getMember().getFcmToken())
+                        .title(loginMember.getUsername()+"님이 회원님의 게시물에 좋아요를 눌렀습니다")
+                .build());
+
+        return postLike.getId();
+    }
+
     private List<String> addImages(List<MultipartFile> files) {
         return files.stream()
                 .map(f -> s3Upload.upload(f, POST_IMAGE_PATH))
                 .collect(Collectors.toList());
     }
 
-    public void update(PostUpdate req, Long postId, Member member) {
+    public void update(PostUpdate req, Long postId, Member loginMember) {
         Post findPost = getPost(postId);
+        memberValidate(loginMember, findPost);
+
         findPost.update(req);
     }
 
-    public void deleteById(Long postId, Member member) {
+    public void deleteById(Long postId, Member loginMember) {
         Post findPost = getPost(postId);
+        memberValidate(loginMember, findPost);
+
         postRepository.deleteById(findPost.getId());
+    }
+
+    private void memberValidate(Member member, Post findPost) {
+        if(!findPost.getMember().equals(member)){
+            throw new BusinessException(ErrorCode.HANDLE_ACCESS_DENIED);
+        }
     }
 
     private Post getPost(Long postId) {
@@ -75,6 +111,4 @@ public class PostService {
         });
         return category;
     }
-
-
 }

@@ -24,6 +24,7 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
     private String username;
+    private String fcmToken;
 
     @Enumerated(EnumType.STRING)
     private MemberStatus status;

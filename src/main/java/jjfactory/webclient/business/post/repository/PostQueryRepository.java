@@ -3,6 +3,7 @@ package jjfactory.webclient.business.post.repository;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.domain.QPost;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,24 @@ import static jjfactory.webclient.business.post.domain.QPost.*;
 public class PostQueryRepository {
     private final JPAQueryFactory queryFactory;
 
+    public Page<PostRes> findMyPosts(Pageable pageable, String startDate, String endDate, Member loginMember){
+        List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .where(between(startDate, endDate),
+                        post.member.eq(loginMember))
+                .orderBy(post.createdAt.desc())
+                .fetch();
+
+        int total = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .where(between(startDate, endDate),
+                        post.member.eq(loginMember))
+                .fetch().size();
+
+        return new PageImpl<>(posts,pageable,total);
+    }
 
     public Page<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query){
         List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post))
