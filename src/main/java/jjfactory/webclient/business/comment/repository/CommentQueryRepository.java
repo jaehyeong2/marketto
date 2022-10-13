@@ -24,14 +24,14 @@ public class CommentQueryRepository {
     public Page<CommentRes> findComments(Pageable pageable,Long postId){
         List<CommentRes> comments = queryFactory.select(Projections.constructor(CommentRes.class, comment))
                 .from(comment)
-                .where(comment.post.id.eq(postId))
+                .where(comment.post.id.eq(postId),comment.parent.id.isNull())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         int total = queryFactory.select(Projections.constructor(CommentRes.class, comment))
                 .from(comment)
-                .where(comment.post.id.eq(postId))
+                .where(comment.post.id.eq(postId),comment.parent.id.isNull())
                 .fetch().size();
 
         return new PageImpl<>(comments,pageable,total);

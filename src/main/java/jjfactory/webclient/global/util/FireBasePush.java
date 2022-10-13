@@ -48,10 +48,9 @@ public class FireBasePush {
     }
 
 
-    @Async("asyncTask")
+    @Async
     public void sendMessage(FcmMessageDto dto){
         log.info("firebase token :{}",dto.getFcmToken());
-
         try {
             Message message = Message.builder()
                     .setNotification(Notification.builder()

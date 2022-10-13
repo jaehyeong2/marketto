@@ -2,6 +2,7 @@ package jjfactory.webclient.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -22,9 +23,9 @@ import java.util.Set;
 public class SwaggerConfig {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("mini-api")
-                .version("0.0.1")
-                .description("사내에서 개발했던 api를 간소화한 프로젝트")
+                .title("Marketto")
+//                .version("0.0.1")
+                .description("간단한 구매 사이트 api입니다.")
                 .build();
     }
 
@@ -60,7 +61,7 @@ public class SwaggerConfig {
     @Bean
     public Docket commonApi() {
         return new Docket(DocumentationType.SWAGGER_2)
-//                .ignoredParameterTypes(AuthenticationPrincipal.class)
+                .ignoredParameterTypes(AuthenticationPrincipal.class)
                 .consumes(getConsumeContentTypes())
                 .produces(getProduceContentType())
                 .groupName("APP Server")
@@ -79,7 +80,7 @@ public class SwaggerConfig {
     @Bean
     public Docket managerApi() {
         return new Docket(DocumentationType.SWAGGER_2)
-//                .ignoredParameterTypes(AuthenticationPrincipal.class)
+                .ignoredParameterTypes(AuthenticationPrincipal.class)
                 .consumes(getConsumeContentTypes())
                 .produces(getProduceContentType())
                 .groupName("jjfactory")
