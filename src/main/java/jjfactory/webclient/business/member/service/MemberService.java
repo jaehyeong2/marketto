@@ -5,14 +5,17 @@ import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.member.dto.req.MemberCreate;
 import jjfactory.webclient.business.member.dto.req.MemberUpdate;
 import jjfactory.webclient.business.member.dto.res.MemberRes;
+import jjfactory.webclient.business.member.repository.MemberQueryRepository;
 import jjfactory.webclient.business.member.repository.MemberRepository;
 import jjfactory.webclient.global.ex.BusinessException;
 import jjfactory.webclient.global.ex.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ import java.util.Optional;
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final MemberQueryRepository memberQueryRepository;
 
     @Transactional(readOnly = true)
     public MemberRes getMyInfo(Member member) {
@@ -46,9 +50,14 @@ public class MemberService {
         findMember.modify(req);
     }
 
-    public void withdraw(Long memberId) {
-        Member member = getMember(memberId);
-        member.withdraw();
+    public String withdraw(Member member) {
+        member.withdraw(LocalDateTime.now());
+        return "ok";
+    }
+
+    @Scheduled(cron = "0 5 0 * * *") //초 분 시 일 월 요일
+    public void deleteMembers(){
+        memberQueryRepository.findWithdrawMembersBefore3Month();
     }
 
     private Member getMember(Long memberId) {

@@ -46,6 +46,7 @@ public class Member extends BaseEntity {
                 .email(dto.getEmail())
                 .password(encPassword)
                 .username(dto.getUsername())
+                .role(Role.USER)
                 .phone(dto.getPhone())
                 .status(MemberStatus.ACT)
                 .build();
@@ -57,8 +58,8 @@ public class Member extends BaseEntity {
         this.phone = dto.getPhone();
     }
 
-    public void withdraw() {
+    public void withdraw(LocalDateTime withdrawDate) {
         this.status = MemberStatus.NON;
-        this.withdrawDate = LocalDateTime.now();
+        this.withdrawDate = withdrawDate;
     }
 }
