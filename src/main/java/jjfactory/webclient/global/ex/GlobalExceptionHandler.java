@@ -1,5 +1,8 @@
 package jjfactory.webclient.global.ex;
 import jjfactory.webclient.global.dto.res.ErrorResponse;
+import jjfactory.webclient.global.slack.SlackService;
+import jjfactory.webclient.global.util.image.S3Upload;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +15,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.nio.file.AccessDeniedException;
 
+@RequiredArgsConstructor
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    private final SlackService slackService;
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
         log.error("handleMethodArgumentNotValidException",e);
@@ -46,6 +52,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     protected ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
         log.error("handleAccessDeniedException", e);
+        slackService.postSlackMessage("jwt 권한관련 에러가 발생했습니다" + e.getMessage());
         final ErrorResponse response = ErrorResponse.of(ErrorCode.HANDLE_ACCESS_DENIED);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -53,6 +60,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e) {
         log.error("handleEntityNotFoundException", e);
+        slackService.postSlackMessage("프로젝트에서 에러가 발생했습니다. 에러메세지: " + e.getMessage());
         final ErrorCode errorCode = e.getErrorCode();
         final ErrorResponse response = ErrorResponse.of(errorCode);
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));

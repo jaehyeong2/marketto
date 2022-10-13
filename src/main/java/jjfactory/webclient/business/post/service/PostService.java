@@ -51,7 +51,6 @@ public class PostService {
     }
 
     public Long savePost(PostCreate dto, List<MultipartFile> images, Member member){
-        slackService.postSlackMessage("savePost 메소드 호출");
         Category category = getCategory(dto.getCategoryId());
 
         Post post = Post.create(dto, member, category);

@@ -49,12 +49,14 @@ public class S3Upload {
             metadata.setContentLength(file.getSize());
             amazonS3.putObject(new PutObjectRequest(bucket, key, file.getInputStream(), metadata)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
+
         } catch (IOException e) {
             log.error("aws s3 upload error",e);
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+
         } catch (SdkClientException e){
             log.error("aws s3 authorize error",e);
-            slackService.postSlackMessage("aws 이미지 업로드중 에러가 발생하였습니다." + e.toString());
+            slackService.postSlackMessage("aws 이미지 업로드중 에러가 발생하였습니다." + e.getMessage());
             throw new BusinessException(ErrorCode.HANDLE_ACCESS_DENIED);
         }
 
