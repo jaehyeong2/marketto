@@ -5,12 +5,15 @@ import jjfactory.webclient.business.category.repository.CategoryRepository;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.domain.Post;
 import jjfactory.webclient.business.post.domain.PostLike;
+import jjfactory.webclient.business.post.domain.report.Report;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
+import jjfactory.webclient.business.post.dto.req.ReportCreate;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.business.post.repository.PostLikeRepository;
 import jjfactory.webclient.business.post.repository.PostQueryRepository;
 import jjfactory.webclient.business.post.repository.PostRepository;
+import jjfactory.webclient.business.post.repository.ReportRepository;
 import jjfactory.webclient.global.dto.req.FcmMessageDto;
 import jjfactory.webclient.global.dto.res.PagingRes;
 import jjfactory.webclient.global.ex.BusinessException;
@@ -36,6 +39,7 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final CategoryRepository categoryRepository;
     private final PostQueryRepository postQueryRepository;
+    private final ReportRepository reportRepository;
     private final S3Upload s3Upload;
     private final FireBasePush fireBasePush;
 
@@ -71,6 +75,19 @@ public class PostService {
                 .build());
 
         return postLike.getId();
+    }
+
+    public Long report(Member loginMember, ReportCreate dto){
+        Post post = getPost(dto.getPostId());
+        Report report = Report.create(loginMember, post, dto.getReason());
+
+        reportRepository.save(report);
+        fireBasePush.sendMessage(FcmMessageDto.builder()
+                .fcmToken(post.getMember().getFcmToken())
+                .title("회원님의 게시물이 신고를 부적절한 컨텐츠(내용)로 신고당했습니다.")
+                .build());
+
+        return report.getId();
     }
 
     private List<String> addImages(List<MultipartFile> files) {

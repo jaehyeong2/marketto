@@ -33,19 +33,22 @@ public class Post extends BaseEntity {
     private BigDecimal price;
     private int viewCount;
     private int likeCount;
+    private int reportCount;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "photo", joinColumns = @JoinColumn(name = "post_id"))
     private List<PostImage> images = new ArrayList<>();
 
     @Builder
-    public Post(Member member, Category category, String title, String content, BigDecimal price, int viewCount, List<PostImage> images) {
+    public Post(Member member, Category category, String title, String content, BigDecimal price, int viewCount, int likeCount, int reportCount, List<PostImage> images) {
         this.member = member;
         this.category = category;
         this.title = title;
         this.content = content;
         this.price = price;
         this.viewCount = viewCount;
+        this.likeCount = likeCount;
+        this.reportCount = reportCount;
         this.images = images;
     }
 
@@ -56,6 +59,8 @@ public class Post extends BaseEntity {
                 .member(member)
                 .category(category)
                 .viewCount(0)
+                .likeCount(0)
+                .reportCount(0)
                 .price(BigDecimal.valueOf(dto.getPrice()))
                 .build();
     }
@@ -74,12 +79,15 @@ public class Post extends BaseEntity {
     public void increaseLikeCount() {
         this.likeCount += 1;
     }
+    public void decreaseLikeCount() {
+        this.likeCount -= 1;
+    }
+
+    public void increaseReportCount() {
+        this.reportCount += 1;
+    }
 
     public void increaseViewCount() {
         this.viewCount += 1;
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount -= 1;
     }
 }
