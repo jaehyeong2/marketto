@@ -7,6 +7,7 @@ import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.member.domain.QMember;
 import jjfactory.webclient.business.post.domain.Post;
 import jjfactory.webclient.business.post.dto.res.PostRes;
+import jjfactory.webclient.global.config.QueryDslConfig;
 import jjfactory.webclient.global.dto.req.MyPageReq;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -30,6 +32,7 @@ import static jjfactory.webclient.business.post.domain.QPost.post;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Import(QueryDslConfig.class)
 @DataJpaTest
 class PostQueryRepositoryTest {
     @Autowired

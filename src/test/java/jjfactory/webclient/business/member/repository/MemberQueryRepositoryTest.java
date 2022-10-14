@@ -3,12 +3,14 @@ package jjfactory.webclient.business.member.repository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.member.domain.MemberStatus;
+import jjfactory.webclient.global.config.QueryDslConfig;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import javax.persistence.EntityManager;
 
@@ -19,6 +21,7 @@ import static jjfactory.webclient.business.member.domain.QMember.member;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Import(QueryDslConfig.class)
 @DataJpaTest
 class MemberQueryRepositoryTest {
 
