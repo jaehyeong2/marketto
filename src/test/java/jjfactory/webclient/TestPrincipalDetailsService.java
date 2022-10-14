@@ -14,6 +14,7 @@ import java.util.Collections;
 public class TestPrincipalDetailsService implements UserDetailsService {
 
     public static final String USERNAME = "wogud222";
+    public static final String ADMIN = "admin";
 
     private Member getMember() {
         return Member.builder()
@@ -26,10 +27,23 @@ public class TestPrincipalDetailsService implements UserDetailsService {
                 .build();
     }
 
+    private Member getAdmin() {
+        return Member.builder()
+                .username(ADMIN)
+                .name("이재형")
+                .password("1234")
+                .email("wogud1514@naver.com")
+                .phone("01012341234")
+                .role(Role.ADMIN)
+                .build();
+    }
+
     @Override
     public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
         if (name.equals(USERNAME)) {
             return new PrincipalDetails(getMember());
+        }else if(name.equals(ADMIN)){
+            return new PrincipalDetails(getAdmin());
         }
         return null;
     }
