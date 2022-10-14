@@ -20,6 +20,7 @@ public class TestPrincipalDetailsService implements UserDetailsService {
                 .username(USERNAME)
                 .name("이재형")
                 .password("1234")
+                .email("wogud1514@naver.com")
                 .phone("01012341234")
                 .role(Role.USER)
                 .build();

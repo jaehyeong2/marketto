@@ -53,23 +53,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     //시큐리티 설정 바꾸고 싶으면 여기 수정하면 됨
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         http.httpBasic()
-                .disable()
-                .csrf()
-                .disable()
-                .sessionManagement()
+                .disable().csrf()
+                .disable().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()//이거없으면 큰일남
-                .antMatchers("/**").permitAll().
-                and()
+                .antMatchers("/**").permitAll()
+                .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler())
                 .authenticationEntryPoint(authenticationEntryPoint())
-                .and().
-                addFilterBefore(new TokenFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class).
-        addFilterBefore(exceptionFilter,TokenFilter.class)
+                .and()
+                .addFilterBefore(new TokenFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(exceptionFilter,TokenFilter.class)
         ;
     }
 
