@@ -37,7 +37,6 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final PostQueryRepository postQueryRepository;
     private final S3Upload s3Upload;
-    private final SlackService slackService;
     private final FireBasePush fireBasePush;
 
     @Transactional(readOnly = true)
@@ -49,6 +48,8 @@ public class PostService {
     public PagingRes<PostRes> findMyPosts(Pageable pageable,String startDate,String endDate,Member member){
         return new PagingRes<>(postQueryRepository.findMyPosts(pageable,startDate,endDate,member));
     }
+
+    //TODO findPost 게시글 1개조회
 
     public Long savePost(PostCreate dto, List<MultipartFile> images, Member member){
         Category category = getCategory(dto.getCategoryId());
@@ -78,18 +79,20 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public void update(PostUpdate req, Long postId, Member loginMember) {
+    public Long update(PostUpdate req, Long postId, Member loginMember) {
         Post findPost = getPost(postId);
         memberValidate(loginMember, findPost);
 
         findPost.update(req);
+        return findPost.getId();
     }
 
-    public void deleteById(Long postId, Member loginMember) {
+    public String deleteById(Long postId, Member loginMember) {
         Post findPost = getPost(postId);
         memberValidate(loginMember, findPost);
 
         postRepository.deleteById(findPost.getId());
+        return "ok";
     }
 
     private void memberValidate(Member member, Post findPost) {

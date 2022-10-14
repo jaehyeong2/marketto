@@ -13,31 +13,29 @@ import java.time.format.DateTimeFormatter;
 @Getter
 public class PostRes {
     private String title;
-    private String content;
-
     private String username;
     private String createdAt;
-
+    private int viewCount;
     @Builder
-    public PostRes(String title, String content, String username, String createdAt) {
+    public PostRes(String title, String username, String createdAt, int viewCount) {
         this.title = title;
-        this.content = content;
         this.username = username;
         this.createdAt = createdAt;
+        this.viewCount = viewCount;
     }
 
     public PostRes(Post post) {
         this.title = post.getTitle();
-        this.content = post.getContent();
         this.username = post.getMember().getUsername();
+        this.viewCount = post.getViewCount();
         this.createdAt = post.getCreatedAt()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
     public PostRes(Post post, Member member) {
         this.title = post.getTitle();
-        this.content = post.getContent();
         this.username = member.getUsername();
+        this.viewCount = post.getViewCount();
         this.createdAt = post.getCreatedAt()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }

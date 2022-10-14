@@ -20,8 +20,9 @@ public class CategoryService {
         return category.getId();
     }
 
-    public void delete(Long id){
+    public String delete(Long id){
         categoryRepository.deleteById(id);
+        return "ok";
     }
 
 }

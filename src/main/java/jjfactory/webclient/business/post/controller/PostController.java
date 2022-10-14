@@ -1,16 +1,19 @@
 package jjfactory.webclient.business.post.controller;
 
 
+import io.swagger.annotations.ApiOperation;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
+import jjfactory.webclient.business.post.dto.req.PostUpdate;
+import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.business.post.service.PostService;
+import jjfactory.webclient.global.config.auth.PrincipalDetails;
+import jjfactory.webclient.global.dto.req.MyPageReq;
+import jjfactory.webclient.global.dto.res.ApiPageRes;
 import jjfactory.webclient.global.dto.res.ApiRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,11 +23,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-
+    @GetMapping("/all")
+    @ApiOperation(value = "모든 게시글 조화" , notes = "모든 게시글 페이징, 날짜 검색 및 키워드 검색가능")
+    public ApiPageRes<PostRes> findAllPosts(@RequestParam(required = false, defaultValue = "1") int page,
+                                            @RequestParam(required = false, defaultValue = "10") int size,
+                                            @RequestParam(required = false) String startDate,
+                                            @RequestParam(required = false) String endDate,
+                                            @RequestParam(required = false) String query){
+        return new ApiPageRes<>(postService.findAllPosts(new MyPageReq(page,size).of(),startDate,endDate,query));
+    }
+    @GetMapping
+    @ApiOperation(value = "내 게시글 조화" , notes = "모든 게시글 페이징, 날짜 검색 및 키워드 검색가능")
+    public ApiPageRes<PostRes> findMyPosts(@RequestParam(required = false, defaultValue = "1") int page,
+                                           @RequestParam(required = false, defaultValue = "10") int size,
+                                           @RequestParam(required = false) String startDate,
+                                           @RequestParam(required = false) String endDate,
+                                           @AuthenticationPrincipal PrincipalDetails principalDetails){
+        return new ApiPageRes<>(postService.findMyPosts(new MyPageReq(page,size).of(),startDate,endDate,principalDetails.getMember()));
+    }
     @PostMapping
+    @ApiOperation(value = "게시글 생성" , notes = "@RequestPart이용. ")
     public ApiRes<Long> createPost(@RequestPart PostCreate dto,
                                    @RequestPart List<MultipartFile> images,
                                    @AuthenticationPrincipal Member member){
         return new ApiRes<>(postService.savePost(dto,images,member));
+    }
+
+    @DeleteMapping("/{postId}")
+    @ApiOperation(value = "게시글 삭제")
+    public ApiRes<String> deleteBoard(@PathVariable Long postId,
+                                   @AuthenticationPrincipal Member member){
+        return new ApiRes<>(postService.deleteById(postId,member));
+    }
+
+    @PatchMapping("/{postId}")
+    @ApiOperation(value = "게시글 수정")
+    public ApiRes<Long> updatePost(@PathVariable Long postId,
+                                   @RequestBody PostUpdate dto,
+                                   @AuthenticationPrincipal Member member){
+        return new ApiRes<>(postService.update(dto,postId,member));
     }
 }
