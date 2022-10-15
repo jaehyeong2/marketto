@@ -5,24 +5,21 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jjfactory.webclient.business.member.domain.Member;
-import jjfactory.webclient.business.member.domain.QMember;
 import jjfactory.webclient.business.post.domain.Post;
 import jjfactory.webclient.business.post.domain.PostImage;
 import jjfactory.webclient.business.post.domain.QPost;
+import jjfactory.webclient.business.post.dto.req.PostImageCreate;
 import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.global.config.QueryDslConfig;
 import jjfactory.webclient.global.dto.req.MyPageReq;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
@@ -35,7 +32,6 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static jjfactory.webclient.business.member.domain.QMember.*;
 import static jjfactory.webclient.business.post.domain.QPost.post;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @Import(QueryDslConfig.class)
 @DataJpaTest
@@ -76,22 +72,29 @@ class PostQueryRepositoryTest {
     @DisplayName("게시물 단건 조회 성공")
     void findPost(){
         //given
-        Post post = Post.builder()
+        Post findPost = Post.builder()
                 .member(wogud222)
-                .images(Collections.singletonList(new PostImage("/testImageUrl")))
                 .build();
 
-        em.persist(post);
+        em.persist(findPost);
+
+        PostImageCreate imageDto = PostImageCreate.builder()
+                .originName("/test/txt")
+                .saveName("testName")
+                .imgUrl("testurl").build();
+
+        PostImage postImage = PostImage.create(imageDto, findPost);
+        em.persist(postImage);
 
         //when
         PostDetailRes res = queryFactory.select(Projections.constructor(PostDetailRes.class, QPost.post))
                 .from(QPost.post)
-                .where(QPost.post.id.eq(post.getId()))
+                .where(QPost.post.id.eq(findPost.getId()))
                 .fetchOne();
 
         //then
         assertThat(res.getUsername()).isEqualTo("wogud222");
-        assertThat(res.getImages().get(0)).isEqualTo("/testImageUrl");
+        assertThat(res.getImages().get(0).getImagePath()).isEqualTo("testurl");
     }
 
     @Test

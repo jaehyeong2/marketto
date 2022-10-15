@@ -4,32 +4,30 @@ import jjfactory.webclient.business.category.domain.Category;
 import jjfactory.webclient.business.category.repository.CategoryRepository;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.domain.Post;
+import jjfactory.webclient.business.post.domain.PostImage;
 import jjfactory.webclient.business.post.domain.PostLike;
 import jjfactory.webclient.business.post.domain.report.Report;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
+import jjfactory.webclient.business.post.dto.req.PostImageCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
 import jjfactory.webclient.business.post.dto.req.ReportCreate;
 import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
-import jjfactory.webclient.business.post.repository.PostLikeRepository;
-import jjfactory.webclient.business.post.repository.PostQueryRepository;
-import jjfactory.webclient.business.post.repository.PostRepository;
-import jjfactory.webclient.business.post.repository.ReportRepository;
+import jjfactory.webclient.business.post.repository.*;
 import jjfactory.webclient.global.dto.req.FcmMessageDto;
 import jjfactory.webclient.global.dto.res.PagingRes;
 import jjfactory.webclient.global.ex.BusinessException;
 import jjfactory.webclient.global.ex.ErrorCode;
-import jjfactory.webclient.global.slack.SlackService;
 import jjfactory.webclient.global.util.FireBasePush;
-import jjfactory.webclient.global.util.image.S3Upload;
+import jjfactory.webclient.global.util.s3.S3UploaderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -40,8 +38,9 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final CategoryRepository categoryRepository;
     private final PostQueryRepository postQueryRepository;
+    private final PostImageRepository postImageRepository;
     private final ReportRepository reportRepository;
-    private final S3Upload s3Upload;
+    private final S3UploaderService s3UploaderService;
     private final FireBasePush fireBasePush;
 
     @Transactional(readOnly = true)
@@ -63,7 +62,15 @@ public class PostService {
         Category category = getCategory(dto.getCategoryId());
 
         Post post = Post.create(dto, member, category);
-        post.addImagePaths(addImages(images));
+
+        List<PostImage> imageList = new ArrayList<>();
+        images.forEach(i -> {
+            PostImageCreate req = s3UploaderService.upload(i, "/image");
+            PostImage postImage = PostImage.create(req, post);
+            imageList.add(postImage);
+        });
+        postImageRepository.saveAll(imageList);
+
         postRepository.save(post);
         return post.getId();
     }
@@ -92,12 +99,6 @@ public class PostService {
                 .build());
 
         return report.getId();
-    }
-
-    private List<String> addImages(List<MultipartFile> files) {
-        return files.stream()
-                .map(f -> s3Upload.upload(f, POST_IMAGE_PATH))
-                .collect(Collectors.toList());
     }
 
     public Long update(PostUpdate req, Long postId, Member loginMember) {

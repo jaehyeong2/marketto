@@ -21,11 +21,10 @@ public class PostDetailRes {
     private String createdAt;
     private int viewCount;
     private int likeCount;
-    private List<String> images;
-
+    private List<PostImageRes> images;
 
     @Builder
-    public PostDetailRes(String title,String content, String username, String createdAt, int viewCount, int likeCount,List<String> images) {
+    public PostDetailRes(String title, String content, String username, String createdAt, int viewCount, int likeCount, List<PostImageRes> images) {
         this.title = title;
         this.content = content;
         this.username = username;
@@ -38,8 +37,7 @@ public class PostDetailRes {
     public PostDetailRes(Post post) {
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.images = post.getImages().stream().map(PostImage::getUrl)
-                .collect(Collectors.toList());
+        this.images = post.getImages().stream().map(PostImageRes::new).collect(Collectors.toList());
         this.username = post.getMember().getUsername();
         this.viewCount = post.getViewCount();
         this.likeCount = post.getLikeCount();
@@ -51,8 +49,7 @@ public class PostDetailRes {
         this.title = post.getTitle();
         this.username = member.getUsername();
         this.content = post.getContent();
-        this.images = post.getImages().stream().map(PostImage::getUrl)
-                .collect(Collectors.toList());
+        this.images = post.getImages().stream().map(PostImageRes::new).collect(Collectors.toList());
         this.viewCount = post.getViewCount();
         this.createdAt = post.getCreatedAt()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

@@ -1,7 +1,6 @@
 package jjfactory.webclient.global.ex;
 import jjfactory.webclient.global.dto.res.ErrorResponse;
 import jjfactory.webclient.global.slack.SlackService;
-import jjfactory.webclient.global.util.image.S3Upload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -59,7 +58,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e) {
-        log.error("handleEntityNotFoundException", e);
+        log.error("handleBusinessException", e);
         slackService.postSlackMessage("프로젝트에서 에러가 발생했습니다. 에러메세지: " + e.getMessage());
         final ErrorCode errorCode = e.getErrorCode();
         final ErrorResponse response = ErrorResponse.of(errorCode);

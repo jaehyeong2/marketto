@@ -12,7 +12,6 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -35,12 +34,11 @@ public class Post extends BaseEntity {
     private int likeCount;
     private int reportCount;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "photo", joinColumns = @JoinColumn(name = "post_id"))
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "post")
     private List<PostImage> images = new ArrayList<>();
 
     @Builder
-    public Post(Member member, Category category, String title, String content, BigDecimal price, int viewCount, int likeCount, int reportCount, List<PostImage> images) {
+    public Post(Member member, Category category, String title, String content, BigDecimal price, int viewCount, int likeCount, int reportCount) {
         this.member = member;
         this.category = category;
         this.title = title;
@@ -49,10 +47,9 @@ public class Post extends BaseEntity {
         this.viewCount = viewCount;
         this.likeCount = likeCount;
         this.reportCount = reportCount;
-        this.images = images;
     }
 
-    public static Post create(PostCreate dto,Member member,Category category){
+    public static Post create(PostCreate dto, Member member, Category category){
         return Post.builder()
                 .content(dto.getContent())
                 .title(dto.getTitle())
@@ -71,9 +68,8 @@ public class Post extends BaseEntity {
         this.price = BigDecimal.valueOf(dto.getPrice());
     }
 
-    public void addImagePaths(List<String> imagePaths) {
-        this.images = imagePaths.stream().map(PostImage::new)
-                .collect(Collectors.toList());
+    public void addImage(PostImage image) {
+        this.images.add(image);
     }
 
     public void increaseLikeCount() {

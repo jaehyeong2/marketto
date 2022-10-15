@@ -11,6 +11,7 @@ public enum ErrorCode {
     ENTITY_NOT_FOUND(400, " 해당 엔티티를 찾을 수가 없습니다."),
     INTERNAL_SERVER_ERROR(500, "알 수 없는 에러 (서버 에러)"),
     RETROFIT_NETWORK_ERROR(500, "서버간 연결에 실패하였습니다."),
+    FILE_UPLOAD_ERROR(500, "AWS 파일 업로드 중 에러가 발생하였습니다."),
     INVALID_TYPE_VALUE(400, "타입이 올바르지 않습니다."),
     INVALID_TYPE_VALUE2(400, "하이픈이나 문자를 포함할 수 없습니다." ),
     INVALID_LENGTH_VALUE(400, "유효하지 않은 길이입니다." ),
