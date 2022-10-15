@@ -4,11 +4,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 @NoArgsConstructor
 @Getter
 public class CommentCreate {
+    @NotNull
     private Long boardId;
     private Long parentId;
+    @NotBlank
     private String content;
 
     @Builder

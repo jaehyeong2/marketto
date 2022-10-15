@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RequestMapping("/comments")
 @RequiredArgsConstructor
 @RestController
@@ -38,7 +40,7 @@ public class CommentController {
 
     @PostMapping
     @ApiOperation(value = "댓글 생성")
-    public ApiRes<Long> saveComment(@RequestBody CommentCreate dto,
+    public ApiRes<Long> saveComment(@Valid @RequestBody CommentCreate dto,
                                     @AuthenticationPrincipal PrincipalDetails principalDetails){
         return new ApiRes<>(commentService.saveComment(dto,principalDetails.getMember()));
     }
@@ -52,7 +54,7 @@ public class CommentController {
 
     @PatchMapping("/{commentId}")
     @ApiOperation(value = "댓글 수정")
-    public ApiRes<Long> modifyComment(@RequestBody CommentModify dto,
+    public ApiRes<Long> modifyComment(@Valid @RequestBody CommentModify dto,
                                     @PathVariable Long commentId,
                                     @AuthenticationPrincipal PrincipalDetails principalDetails){
         return new ApiRes<>(commentService.modifyComment(commentId,dto,principalDetails.getMember()));
