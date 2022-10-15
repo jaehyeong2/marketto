@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.domain.QPost;
+import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,13 @@ import static jjfactory.webclient.business.post.domain.QPost.*;
 @RequiredArgsConstructor
 public class PostQueryRepository {
     private final JPAQueryFactory queryFactory;
+
+    public PostDetailRes findPost(Long postId){
+        return queryFactory.select(Projections.constructor(PostDetailRes.class, post))
+                .from(post)
+                .where(post.id.eq(postId))
+                .fetchOne();
+    }
 
     public Page<PostRes> findMyPosts(Pageable pageable, String startDate, String endDate, Member loginMember){
         List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post))

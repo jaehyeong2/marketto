@@ -7,6 +7,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.member.domain.QMember;
 import jjfactory.webclient.business.post.domain.Post;
+import jjfactory.webclient.business.post.domain.PostImage;
+import jjfactory.webclient.business.post.domain.QPost;
+import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.global.config.QueryDslConfig;
 import jjfactory.webclient.global.dto.req.MyPageReq;
@@ -25,6 +28,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
@@ -39,12 +43,13 @@ class PostQueryRepositoryTest {
     @Autowired
     EntityManager em;
     private JPAQueryFactory queryFactory;
+    private Member wogud222;
 
     @BeforeEach
     void init(){
         queryFactory = new JPAQueryFactory(em);
 
-        Member wogud222 = Member.builder().username("wogud222")
+        wogud222 = Member.builder().username("wogud222")
                 .build();
         em.persist(wogud222);
 
@@ -65,6 +70,28 @@ class PostQueryRepositoryTest {
 
             em.persist(post);
         }
+    }
+
+    @Test
+    @DisplayName("게시물 단건 조회 성공")
+    void findPost(){
+        //given
+        Post post = Post.builder()
+                .member(wogud222)
+                .images(Collections.singletonList(new PostImage("/testImageUrl")))
+                .build();
+
+        em.persist(post);
+
+        //when
+        PostDetailRes res = queryFactory.select(Projections.constructor(PostDetailRes.class, QPost.post))
+                .from(QPost.post)
+                .where(QPost.post.id.eq(post.getId()))
+                .fetchOne();
+
+        //then
+        assertThat(res.getUsername()).isEqualTo("wogud222");
+        assertThat(res.getImages().get(0)).isEqualTo("/testImageUrl");
     }
 
     @Test

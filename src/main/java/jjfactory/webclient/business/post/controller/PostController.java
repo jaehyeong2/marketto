@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
+import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.business.post.service.PostService;
 import jjfactory.webclient.global.config.auth.PrincipalDetails;
@@ -42,6 +43,13 @@ public class PostController {
                                            @AuthenticationPrincipal PrincipalDetails principalDetails){
         return new ApiPageRes<>(postService.findMyPosts(new MyPageReq(page,size).of(),startDate,endDate,principalDetails.getMember()));
     }
+
+    @GetMapping("/{postId}")
+    @ApiOperation(value = "게시글 단건 조회" )
+    public ApiRes<PostDetailRes> createPost(@PathVariable Long postId){
+        return new ApiRes<>(postService.findPost(postId));
+    }
+
     @PostMapping
     @ApiOperation(value = "게시글 생성" , notes = "@RequestPart이용. ")
     public ApiRes<Long> createPost(@RequestPart PostCreate dto,

@@ -9,6 +9,7 @@ import jjfactory.webclient.business.post.domain.report.Report;
 import jjfactory.webclient.business.post.dto.req.PostCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
 import jjfactory.webclient.business.post.dto.req.ReportCreate;
+import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
 import jjfactory.webclient.business.post.repository.PostLikeRepository;
 import jjfactory.webclient.business.post.repository.PostQueryRepository;
@@ -53,7 +54,10 @@ public class PostService {
         return new PagingRes<>(postQueryRepository.findMyPosts(pageable,startDate,endDate,member));
     }
 
-    //TODO findPost 게시글 1개조회
+    @Transactional(readOnly = true)
+    public PostDetailRes findPost(Long postId){
+        return postQueryRepository.findPost(postId);
+    }
 
     public Long savePost(PostCreate dto, List<MultipartFile> images, Member member){
         Category category = getCategory(dto.getCategoryId());
