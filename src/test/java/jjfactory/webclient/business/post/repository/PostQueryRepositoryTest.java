@@ -1,5 +1,6 @@
 package jjfactory.webclient.business.post.repository;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -58,10 +59,27 @@ class PostQueryRepositoryTest {
             Post post = Post.builder().member(memberTmp)
                     .content("하이" + i)
                     .title("제목" + (i+1))
+                    .likeCount(i)
+                    .viewCount(i)
                     .build();
 
             em.persist(post);
         }
+    }
+
+    @Test
+    @DisplayName("좋아효 갯수 높은것 10개 조회 성공")
+    void findPopular10(){
+        //when
+        List<PostRes> finds = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .orderBy(post.likeCount.desc())
+                .limit(10)
+                .fetch();
+
+        //then
+        assertThat(finds.size()).isEqualTo(10);
+        assertThat(finds.get(0).getLikeCount()).isEqualTo(50);
     }
 
     @Test
@@ -93,7 +111,7 @@ class PostQueryRepositoryTest {
     }
 
     @Test
-    @DisplayName("모든 게시물 조회 성공 + 날짜 검색 + 문자검색")
+    @DisplayName("모든 게시물 조회 성공 + 날짜 검색 + 문자검색 + 정렬 조건")
     void findAllPosts() {
         //given
         String startDate = "2022-09-01 00:00:00";
@@ -108,7 +126,7 @@ class PostQueryRepositoryTest {
                 .limit(pageable.getPageSize())
                 .where(between(startDate, endDate),
                         contains("12"))
-                .orderBy(post.createdAt.desc())
+                .orderBy(orderBy(null))
                 .fetch();
 
         int total = queryFactory.select(Projections.constructor(PostRes.class, post))
@@ -118,6 +136,33 @@ class PostQueryRepositoryTest {
                 .fetch().size();
         //then
         assertThat(total).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("모든 게시물 조회 성공 + 정렬조건 조회순 ")
+    void findPostsOrderByViewCount() {
+        //given
+        String startDate = "2022-09-01 00:00:00";
+        String endDate = "2022-10-30 23:59:59";
+
+        PageRequest pageable = new MyPageReq(1, 10).of();
+
+        //when
+        List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .where(between(startDate, endDate))
+                .orderBy(orderBy(true))
+                .fetch();
+
+        int total = queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .where(between(startDate, endDate))
+                .fetch().size();
+        //then
+        assertThat(total).isEqualTo(50);
+        assertThat(posts.get(0).getViewCount()).isEqualTo(50);
     }
 
     @Test
@@ -147,7 +192,12 @@ class PostQueryRepositoryTest {
                         contains("12"))
                 .fetch().size();
         //then
-        assertThat(total).isEqualTo(21);
+        assertThat(total).isEqualTo(2);
+    }
+
+    private OrderSpecifier<?> orderBy(Boolean orderType) {
+        if(orderType == null) return post.createdAt.desc();
+        return post.viewCount.desc();
     }
 
     private BooleanExpression contains(String query) {

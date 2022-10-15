@@ -29,8 +29,9 @@ public class PostController {
                                             @RequestParam(required = false, defaultValue = "10") int size,
                                             @RequestParam(required = false) String startDate,
                                             @RequestParam(required = false) String endDate,
-                                            @RequestParam(required = false) String query){
-        return new ApiPageRes<>(postService.findAllPosts(new MyPageReq(page,size).of(),startDate,endDate,query));
+                                            @RequestParam(required = false) String query,
+                                            @RequestParam(required = false) Boolean orderType){
+        return new ApiPageRes<>(postService.findAllPosts(new MyPageReq(page,size).of(),startDate,endDate,query,orderType));
     }
     @GetMapping
     @ApiOperation(value = "내 게시글 조화" , notes = "모든 게시글 페이징, 날짜 검색 및 키워드 검색가능")

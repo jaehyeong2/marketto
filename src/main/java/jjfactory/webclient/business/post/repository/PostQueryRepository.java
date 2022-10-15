@@ -1,5 +1,6 @@
 package jjfactory.webclient.business.post.repository;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -44,14 +45,14 @@ public class PostQueryRepository {
         return new PageImpl<>(posts,pageable,total);
     }
 
-    public Page<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query){
+    public Page<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query,Boolean orderType){
         List<PostRes> posts = queryFactory.select(Projections.constructor(PostRes.class, post))
                 .from(post)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .where(between(startDate, endDate),
                         contains(query))
-                .orderBy(post.createdAt.desc())
+                .orderBy(orderBy(orderType))
                 .fetch();
 
         int total = queryFactory.select(Projections.constructor(PostRes.class, post))
@@ -61,6 +62,19 @@ public class PostQueryRepository {
                 .fetch().size();
 
         return new PageImpl<>(posts,pageable,total);
+    }
+
+    private OrderSpecifier<?> orderBy(Boolean orderType) {
+        if(orderType == null) return post.createdAt.desc();
+        return post.viewCount.desc();
+    }
+
+    public List<PostRes> findPopularPosts(){
+        return queryFactory.select(Projections.constructor(PostRes.class, post))
+                .from(post)
+                .orderBy(post.likeCount.desc())
+                .limit(10)
+                .fetch();
     }
 
     private BooleanExpression contains(String query) {

@@ -6,9 +6,7 @@ import jjfactory.webclient.business.category.domain.Category;
 import jjfactory.webclient.business.category.dto.req.CategoryCreate;
 import jjfactory.webclient.business.category.dto.req.CategoryModify;
 import jjfactory.webclient.business.category.repository.CategoryRepository;
-import jjfactory.webclient.business.category.service.CategoryService;
 import jjfactory.webclient.global.config.auth.PrincipalDetails;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -102,8 +99,7 @@ class CategoryControllerIntegratedTest {
         mockMvc.perform(post("/admin/category").with(user(principalDetailsAdmin))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value(1L));
+                .andExpect(status().isOk());
 
         assertThat(categoryRepository.count()).isEqualTo(1);
     }
@@ -122,7 +118,7 @@ class CategoryControllerIntegratedTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value(1L));
+                .andExpect(jsonPath("$.result").value(category.getId()));
 
         //then
         String findName = categoryRepository.findAll().get(0).getName();

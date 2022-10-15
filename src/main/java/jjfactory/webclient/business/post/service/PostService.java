@@ -44,8 +44,8 @@ public class PostService {
     private final FireBasePush fireBasePush;
 
     @Transactional(readOnly = true)
-    public PagingRes<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query){
-        return new PagingRes<>(postQueryRepository.findAllPosts(pageable,startDate,endDate,query));
+    public PagingRes<PostRes> findAllPosts(Pageable pageable,String startDate,String endDate,String query,Boolean orderType){
+        return new PagingRes<>(postQueryRepository.findAllPosts(pageable,startDate,endDate,query,orderType));
     }
 
     @Transactional(readOnly = true)
