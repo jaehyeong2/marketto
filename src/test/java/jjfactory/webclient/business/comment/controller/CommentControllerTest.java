@@ -103,6 +103,7 @@ class CommentControllerTest {
         //stub
         given(commentService.findMyComments(any(Pageable.class),any(Member.class))).willReturn(pagingRes);
 
+
         //expected
         mockMvc.perform(get("/comments").with(user(principalDetails)))
                 .andExpect(status().isOk())

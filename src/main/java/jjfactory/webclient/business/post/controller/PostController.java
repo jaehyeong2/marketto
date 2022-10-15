@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/post")
@@ -46,13 +47,13 @@ public class PostController {
 
     @GetMapping("/{postId}")
     @ApiOperation(value = "게시글 단건 조회" )
-    public ApiRes<PostDetailRes> createPost(@PathVariable Long postId){
+    public ApiRes<PostDetailRes> findPost(@PathVariable Long postId){
         return new ApiRes<>(postService.findPost(postId));
     }
 
     @PostMapping
     @ApiOperation(value = "게시글 생성" , notes = "@RequestPart이용. ")
-    public ApiRes<Long> createPost(@RequestPart PostCreate dto,
+    public ApiRes<Long> createPost(@Valid @RequestPart PostCreate dto,
                                    @RequestPart List<MultipartFile> images,
                                    @AuthenticationPrincipal Member member){
         return new ApiRes<>(postService.savePost(dto,images,member));
@@ -61,15 +62,15 @@ public class PostController {
     @DeleteMapping("/{postId}")
     @ApiOperation(value = "게시글 삭제")
     public ApiRes<String> deleteBoard(@PathVariable Long postId,
-                                   @AuthenticationPrincipal Member member){
-        return new ApiRes<>(postService.deleteById(postId,member));
+                                     @AuthenticationPrincipal PrincipalDetails principalDetails){
+        return new ApiRes<>(postService.deleteById(postId,principalDetails.getMember()));
     }
 
     @PatchMapping("/{postId}")
     @ApiOperation(value = "게시글 수정")
     public ApiRes<Long> updatePost(@PathVariable Long postId,
-                                   @RequestBody PostUpdate dto,
-                                   @AuthenticationPrincipal Member member){
-        return new ApiRes<>(postService.update(dto,postId,member));
+                                   @Valid  @RequestBody PostUpdate dto,
+                                   @AuthenticationPrincipal PrincipalDetails principalDetails){
+        return new ApiRes<>(postService.update(dto,postId,principalDetails.getMember()));
     }
 }
