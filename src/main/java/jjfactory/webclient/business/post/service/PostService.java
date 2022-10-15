@@ -53,8 +53,9 @@ public class PostService {
         return new PagingRes<>(postQueryRepository.findMyPosts(pageable,startDate,endDate,member));
     }
 
-    @Transactional(readOnly = true)
     public PostDetailRes findPost(Long postId){
+        Post post = getPost(postId);
+        post.increaseViewCount();
         return postQueryRepository.findPost(postId);
     }
 
@@ -77,28 +78,36 @@ public class PostService {
 
     public Long like(Member loginMember,Long postId){
         Post post = getPost(postId);
+        loginMemberCheck(loginMember, post);
         PostLike postLike = PostLike.create(loginMember, post);
 
-        postLikeRepository.save(postLike);
+        PostLike findLike = postLikeRepository.save(postLike);
         fireBasePush.sendMessage(FcmMessageDto.builder()
                         .fcmToken(post.getMember().getFcmToken())
                         .title(loginMember.getUsername()+"님이 회원님의 게시물에 좋아요를 눌렀습니다")
                 .build());
 
-        return postLike.getId();
+        return findLike.getId();
     }
 
     public Long report(Member loginMember, ReportCreate dto){
         Post post = getPost(dto.getPostId());
+        loginMemberCheck(loginMember, post);
         Report report = Report.create(loginMember, post, dto.getReason());
 
-        reportRepository.save(report);
+        Report findReport = reportRepository.save(report);
         fireBasePush.sendMessage(FcmMessageDto.builder()
                 .fcmToken(post.getMember().getFcmToken())
                 .title("회원님의 게시물이 신고를 부적절한 컨텐츠(내용)로 신고당했습니다.")
                 .build());
 
-        return report.getId();
+        return findReport.getId();
+    }
+
+    private void loginMemberCheck(Member loginMember, Post post) {
+        if(loginMember.equals(post.getMember())){
+            throw new BusinessException(ErrorCode.HANDLE_ACCESS_DENIED);
+        }
     }
 
     public Long update(PostUpdate req, Long postId, Member loginMember) {
