@@ -1,21 +1,24 @@
 package jjfactory.webclient.business.post.service;
 
+import jjfactory.webclient.business.category.domain.Category;
+import jjfactory.webclient.business.category.repository.CategoryRepository;
 import jjfactory.webclient.business.member.domain.Member;
 import jjfactory.webclient.business.post.domain.Post;
+import jjfactory.webclient.business.post.domain.PostImage;
 import jjfactory.webclient.business.post.domain.PostLike;
 import jjfactory.webclient.business.post.domain.report.Report;
 import jjfactory.webclient.business.post.domain.report.ReportReason;
+import jjfactory.webclient.business.post.dto.req.PostCreate;
+import jjfactory.webclient.business.post.dto.req.PostImageCreate;
 import jjfactory.webclient.business.post.dto.req.PostUpdate;
 import jjfactory.webclient.business.post.dto.req.ReportCreate;
 import jjfactory.webclient.business.post.dto.res.PostDetailRes;
 import jjfactory.webclient.business.post.dto.res.PostRes;
-import jjfactory.webclient.business.post.repository.PostLikeRepository;
-import jjfactory.webclient.business.post.repository.PostQueryRepository;
-import jjfactory.webclient.business.post.repository.PostRepository;
-import jjfactory.webclient.business.post.repository.ReportRepository;
+import jjfactory.webclient.business.post.repository.*;
 import jjfactory.webclient.global.ex.BusinessException;
 import jjfactory.webclient.global.ex.ErrorCode;
 import jjfactory.webclient.global.util.FireBasePush;
+import jjfactory.webclient.global.util.s3.S3UploaderService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,9 +28,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -49,6 +55,12 @@ class PostServiceTest {
     PostQueryRepository postQueryRepository;
     @Mock
     ReportRepository reportRepository;
+    @Mock
+    CategoryRepository categoryRepository;
+    @Mock
+    S3UploaderService s3UploaderService;
+    @Mock
+    PostImageRepository postImageRepository;
 
     @Test
     @DisplayName("게시물 단건 조회 성공")
@@ -81,6 +93,28 @@ class PostServiceTest {
     @Test
     @DisplayName("게시물 저장 성공")
     void savePost() {
+        //given
+        Member wogud222 = Member.builder()
+                .username("wogud222")
+                .build();
+
+        Category category = Category.builder().name("cate").build();
+
+        PostCreate dto = PostCreate.builder()
+                .title("title").content("content").categoryId(1L)
+                .build();
+
+        MultipartFile image = new MockMultipartFile("name","content".getBytes());
+
+        //stub
+        when(categoryRepository.findById(any())).thenReturn(Optional.ofNullable(category));
+        when(postImageRepository.saveAll(any())).thenReturn(Collections.singletonList(PostImage.builder().build()));
+        when(s3UploaderService.upload(any(),anyString())).thenReturn(PostImageCreate
+                .builder()
+                .build());
+
+        //when
+        postService.savePost(dto, Collections.singletonList(image),wogud222);
     }
 
     @Test

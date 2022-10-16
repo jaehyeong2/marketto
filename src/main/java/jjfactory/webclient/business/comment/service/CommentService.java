@@ -53,13 +53,13 @@ public class CommentService {
                     .build());
         }
 
-        commentRepository.save(comment);
+        Comment findComment = commentRepository.save(comment);
         fireBasePush.sendMessage(FcmMessageDto.builder()
                 .fcmToken(post.getMember().getFcmToken())
                 .title(loginMember.getUsername()+"님이 회원님의 게시물에 댓글을 남겼습니다.")
                 .build());
 
-        return comment.getId();
+        return findComment.getId();
     }
 
     public String deleteComment(Long commentId,Member loginMember){
